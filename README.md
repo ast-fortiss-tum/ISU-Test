@@ -1,5 +1,7 @@
 # ISU-Test: Search-based Testing of Vision Language Models for In-Car Scene Understanding
 
+[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3832783.3834506-blue)](https://doi.org/10.1145/3832783.3834506)
+
 <table align="center">
   <tr>
     <td><img src="docs/ex_1.png" alt="example 1" width="360" /></td>
@@ -98,6 +100,22 @@ A generated dataset of interior scenes with ISU-Test will be provided soon.
 ## License
 
 See [LICENSE](LICENSE) for licensing information.
+
+## Citation
+
+If you use **ISU-Test** in your research, please cite the accompanying ASE 2026 paper:
+
+```bibtex
+@inproceedings{sorokin2026isutest,
+  author    = {Lev Sorokin and Chen Yang and Ken E. Friedl and Andrea Stocco},
+  title     = {Search-based Testing of Vision Language Models for In-Car Scene Understanding},
+  booktitle = {Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE 2026), Industry Track},
+  year      = {2026},
+  doi       = {10.1145/3832783.3834506}
+}
+```
+
+A preprint is available on arXiv: https://arxiv.org/abs/2607.02300
 
 ## Contact
 
