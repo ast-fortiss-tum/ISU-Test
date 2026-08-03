@@ -92,6 +92,9 @@ python run_tests_isu.py \
   --features_config "configs/isu_features.json" \
   --seed 1
 ```
+## Replication
+
+A snapshot for the replication of the results in the paper is provided here: https://figshare.com/s/cb5b0eae0411e54b1bbd
 
 ## Dataset
 
