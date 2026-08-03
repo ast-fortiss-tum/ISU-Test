@@ -1,0 +1,237 @@
+{ 
+  "categorical_features": [
+    {
+        "name": "participant_driver",
+        "values": [
+            "CHEN",
+            "LEV",
+            "IVAN",
+            "KEN"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "in_car_light",
+        "values": [
+            "OFF",
+            "ON"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "env_light_discrete",
+        "values": [
+            "MEDIUM",
+            "HIGH"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "gender",
+        "values": [
+            "None"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "emotion",
+        "values": [
+            "HAPPY",
+            "SERIOUS"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "driver_tshirt_color",
+        "values": [
+            "BLACK",
+            "WHITE"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "phone_driver",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "phone_driver_pose_frame",
+        "values": [
+            70,
+            80,
+            90,
+            100,
+            110,
+            120,
+            180,
+            190,
+            200
+        ],
+        "distribution": null
+    },
+    {
+        "name": "safety_belt",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "env",
+        "values": [
+        "GARAGE"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "car",
+        "values": [
+            "BMW"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "suitcase",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "suitcase_color",
+        "values": [
+            "ANTRACITE",
+            "YELLOW"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "suitcase_location",
+        "values": [
+            "CO_DRIVER_SEAT",
+            "REAR_SEAT"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "suitcase_pose",
+        "values": [
+            "UPWARDS",
+            "FLAT"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "suitcase_rotation",
+        "values": [
+            40,
+            50,
+            80,
+            90,     
+            120,
+            140
+        ],
+        "distribution": null
+    },
+    {
+        "name": "phone_codriver_seat",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "phone_codriver_seat_color",
+        "values": [
+            "BLACK",
+            "WHITE"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "colabottle_codriver_seat",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "colacan_codriver_seat",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "baby_seat",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "baby_seat_orientation",
+        "values": [
+            "FRONT_FACING",
+            "REAR_FACING"
+        ],
+        "distribution": null
+    },
+    {
+        "name": "baby",
+        "values": [
+            "NO",
+            "YES"
+        ],
+        "distribution": null
+    }
+  ],
+  "ordinal_features": [   
+  ],
+  "continuous_features": [  
+    {
+        "name": "height_m",
+        "lb": 1.6,
+        "ub": 2.0
+    },    
+    {
+        "name": "weight_kg",
+        "lb": 50,
+        "ub": 100
+    },    
+    {
+        "name": "light_front",
+        "lb": 0.0,
+        "ub": 0.5
+    },   
+    {
+        "name": "light_back_left",
+        "lb": 0.0,
+        "ub": 0.5
+    },  
+    {
+        "name": "light_back_right",
+        "lb": 0.0,
+        "ub": 0.5
+    },  
+    {
+        "name": "env_strength",
+        "lb": 0.5,
+        "ub": 1.0
+    },
+    {
+        "name": "exposure_compensation",
+        "lb": 0.0,
+        "ub": 2.0
+    }
+  ]
+}

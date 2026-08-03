@@ -1,0 +1,91 @@
+.DS_Store
+
+# isu/blender
+isu/blender/assets
+isu/blender/json_inputs
+isu/blender/images
+isu/blender/textures
+isu/blender/scenes
+isu/blender/scripts/smpl/data
+isu/data_val
+isu/data_val_copy
+isu/blender/blender_simulation.log
+logs/
+
+# IDE
+.vscode/
+*.code-workspace
+
+# Python
+venv/
+**/__pycache__/
+build/**
+build/**
+**/*.pyc
+dist
+data/in/**
+.env
+
+# CARLA
+cache/
+
+# Logging
+log.txt
+
+# Egg
+test_case_generation.egg-info
+
+# Temporary files
+carla_simulation/temp
+docs/jupyter/.ipynb_checkpoints/*
+
+**/results*/
+
+docs/jupyter/opensbt-core/results/*
+
+# Testing
+docs/jupyter/opensbt-core
+docs/jupyter/tmp
+docs/jupyter/venv
+docs/jupyter/.ipynb_checkpoints
+
+#build
+*/*egg-info
+*/dist/*
+opensbt.egg-info/dependency_links.txt
+opensbt.egg-info/PKG-INFO
+opensbt.egg-info/requires.txt
+opensbt.egg-info/SOURCES.txt
+opensbt.egg-info/top_level.txt
+
+#tests
+tests/output/**
+llm/perturbations/*.xlsx
+
+#docs
+docs/_build/**
+docs/build/**
+
+data.json
+llm/data/**
+data/out/**
+data/eval/*
+
+judge_eval/out/**
+
+output*
+*.log
+
+wandb/out/**
+
+judge_eval/out/**
+
+wandb
+.DS_Store
+.envrc
+*.csv
+
+wandb_download/**
+wandb_analysis/**
+
+C:**
