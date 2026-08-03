@@ -91,6 +91,9 @@ python run_tests_isu.py \
   --seed 1
 ```
 
+## Dataset
+
+A generated dataset of interior scenes with ISU-Test will be provided soon.
 
 ## License
 
