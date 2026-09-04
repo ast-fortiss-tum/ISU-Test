@@ -31,7 +31,6 @@ if str(REPO_ROOT) not in sys.path:
 
 import pymoo
 import wandb
-import psutil
 from PIL import Image
 
 from opensbt.model_ga.individual import IndividualSimulated
@@ -131,12 +130,6 @@ def make_dirs(output_root: Path) -> dict[str, Path]:
     for path in paths.values():
         path.mkdir(parents=True, exist_ok=True)
     return paths
-
-
-def print_memory(stage: str) -> None:
-    process = psutil.Process(os.getpid())
-    rss_mb = process.memory_info().rss / (1024 * 1024)
-    print(f"[MEMORY] {stage}: RSS={rss_mb:.1f} MB")
 
 
 def rotate_canny_outputs(canny_dir: Path) -> None:
@@ -278,7 +271,6 @@ def main() -> None:
         raise FileNotFoundError(f"Scene file not found: {scene_path}")
 
     dirs = make_dirs(output_root)
-    print_memory("after output directory setup")
     algorithm_label = "rs" if args.algorithm == "rs" else "ga"
     problem_name = f"isu_{algorithm_label}_{args.population_size}n_{args.n_generations}g_{args.seed}seed"
     setup_logging(str(output_root / "ga.log"))
@@ -366,16 +358,13 @@ def main() -> None:
         )
         optimizer = optimizer.resume(optimizer.save_folder)
         result = optimizer.run()
-    print_memory("after search")
     result.write_results(
         results_folder=optimizer.save_folder,
         params=optimizer.parameters,
         search_config=config,
         norm_bounds=norm_bounds,
     )
-    print_memory("after write_results")
     rotate_canny_outputs(dirs["canny"])
-    print_memory("after depth conversion")
     write_output_metadata(
         output_root=output_root,
         scene_path=scene_path,
