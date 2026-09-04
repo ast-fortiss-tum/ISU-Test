@@ -1,4 +1,4 @@
-python scripts/generate_isu_render_and_canny.py \
+python scripts/generate_isu_data.py \
       --population-size 2 \
       --n-generations 2 \
       --scene isu/blender/scenes/scene_v3.blend \

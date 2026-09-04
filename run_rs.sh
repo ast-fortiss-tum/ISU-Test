@@ -1,4 +1,4 @@
-python scripts/generate_isu_render_and_canny.py \
+python scripts/generate_isu_data.py \
       --algorithm rs \
       --population-size 10 \
       --features-config configs/isu_challenge_features.json \

@@ -2,7 +2,7 @@
 Run random sampling or genetic search for ISU scenarios and save Blender outputs.
 
 Example:
-    python scripts/generate_isu_render_and_canny.py \
+    python scripts/generate_isu_data.py \
         --population-size 4 \
         --n-generations 2 \
         --scene isu/blender/scenes/scene_v3.blend \
@@ -11,7 +11,7 @@ Example:
         --sut dummy
 
     # Random sampling mode:
-    python scripts/generate_isu_render_and_canny.py \
+    python scripts/generate_isu_data.py \
         --algorithm rs --population-size 100 \
         --output-dir results/scene_v3_rs --sut dummy
 """
