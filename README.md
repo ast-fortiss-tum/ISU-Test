@@ -8,6 +8,73 @@
 
 This project provides search-based generation and testing of in-car scene-understanding scenarios. The current entry point is [scripts/generate_isu_data.py](scripts/generate_isu_data.py). It supports both genetic search and random sampling, renders Blender scenes, evaluates the selected SUT, and writes the generated artifacts and metadata to a timestamped result folder.
 
+## Getting started
+
+### 1. Install Python dependencies
+
+From the repository root, create and activate a virtual environment, then install the dependencies listed in [requirements.txt](requirements.txt):
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+```
+
+On systems where PowerShell script execution is restricted, activate the environment from Command Prompt instead:
+
+```bat
+venv\Scripts\activate.bat
+```
+
+### 2. Install Blender 5.1.2
+
+Download and install Blender 5.1.2 from the [official Blender downloads](https://www.blender.org/download/). The renderer is invoked in background mode using the Blender executable, so the installed version should match the version used for the scene and assets.
+
+### 3. Configure the Blender executable
+
+Set `BLENDER_APP_PATH` in [isu/config.py](isu/config.py) to the full path of the installed Blender executable. For example, on Windows:
+
+```python
+BLENDER_APP_PATH = r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe"
+```
+
+On macOS, use the executable inside the Blender application bundle:
+
+```python
+BLENDER_APP_PATH = "/Applications/Blender.app/Contents/MacOS/Blender"
+```
+
+The scene and driver paths are configured in the same file through `BLENDER_FILE_PATH` and `BLENDER_SCRIPT_PATH`.
+
+### 4. Add the Blender scene
+
+Obtain the `.blend` file representing the desired scene and copy it into [isu/blender/scenes](isu/blender/scenes). The default scene is `scene_v3.blend`. Pass another scene with the `--scene` flag when running the unified generator.
+
+### 5. Download the required SMPL-X data and assets
+
+SMPL-X data and assets are not redistributed with this repository. Download them from the official project pages and review their license terms before use:
+
+- **SMPL-X/AGORA NPZ data:** download the required `.npz` files from [AGORA](https://agora.is.tue.mpg.de/) and place them under `isu/blender/smpl/data/`.
+- **Other SMPL-X data:** download the required files from [SMPL-X](https://smpl-x.is.tue.mpg.de/), especially the data used by the assets under `isu/blender/assets/smplx_gt/`. The SMPL-X homepage contains the relevant license information.
+- **Additional SMPL resources:** the [SMPL Made Simple](https://smpl-made-simple.is.tue.mpg.de/) tutorial collection provides links to related sources and background material.
+
+For additional shapes or clothing textures, see the [SMPLitex texture collection](https://github.com/dancasas/dancasas.github.io/tree/master/projects/SMPLitex/SMPLitex-dataset/textures). Review the terms of each downloaded asset before including it in a dataset or redistribution.
+
+Create the human texture folders under [isu/blender/assets/human_texture](isu/blender/assets/human_texture) and add the required files:
+
+```text
+isu/blender/assets/human_texture/
+├── female/
+│   ├── 0white_female.png
+│   └── 1black_female.png
+└── male/
+  ├── 0white_male.png
+  └── 1black_male.png
+```
+
+The filenames must match the texture names expected by the Blender driver. The SMPL-X, AGORA, and third-party texture sources have separate licensing terms; see [License & Attributions](#license--attributions) before using them.
+
 ## Example outputs
 
 The following channel examples are from the random-sampling run in
@@ -19,7 +86,7 @@ The following channel examples are from the random-sampling run in
     <td><strong>Canny edges</strong><br /><img src="docs/readme_assets/scene_v3_rs/canny.png" alt="Canny edge channel" width="360" /></td>
   </tr>
   <tr>
-    <td><strong>Semantic segmentation</strong><br /><img src="docs/readme_assets/scene_v3_rs/semantic_segmentation.png" alt="Semantic segmentation channel" width="360" /></td>
+    <td><strong>Depth map</strong><br /><img src="docs/readme_assets/scene_v3_rs/depth.png" alt="Depth map channel" width="360" /></td>
     <td><strong>Instance segmentation</strong><br /><img src="docs/readme_assets/scene_v3_rs/instance_segmentation.png" alt="Instance segmentation channel" width="360" /></td>
   </tr>
 </table>
@@ -29,6 +96,9 @@ For each successful sample, the pipeline can produce these image channels:
 | Channel | Output | Description |
 | --- | --- | --- |
 | RGB | `images/<sample>_sim.png` | Rendered Blender scene used as the primary input. |
+| Depth | `depth/exr/<sample>_depth.exr` | Normalized depth pass written by Blender as an OpenEXR file. |
+| Depth PNG | `depth/png/<sample>_depth.png` | 16-bit grayscale PNG conversion of the depth pass. |
+| Depth visualization | `depth/vis/<sample>_depth_vis.png` | Colorized PNG visualization of the depth pass. |
 | Semantic segmentation | `seg/<sample>_seg.png` | Pixel colors identify semantic classes such as human, phone, suitcase, baby seat, safety belt, beverage, car interior, exterior, blanket, and seat. |
 | Canny | `canny/<sample>_canny.png` | Geometry-edge image produced by the Blender Freestyle pass and rotated 180 degrees during post-processing. |
 | Instance segmentation | `instance_seg/<sample>_instance_seg.png` | Pixel colors identify individual scene instances, including occupants, phones, belts, beverages, suitcase, baby seat, baby, seats, and car regions. |
@@ -99,7 +169,7 @@ python scripts/generate_isu_data.py \
 | `--max-time` | unset | Optional total search duration in `hh:mm:ss` format. |
 | `--no-wandb` | disabled | Disable Weights & Biases logging. Logging is enabled unless this flag is provided. |
 
-The generated result folder contains `json_inputs/`, `images/`, `seg/`, `canny/`, `instance_seg/`, `critical_images/`, `sample_manifest.json`, `seg_class_map.json`, and `instance_seg_class_map.json`. Genetic-search result files and plots are written there as well.
+The generated result folder contains `json_inputs/`, `images/`, `depth/exr/`, `seg/`, `canny/`, `instance_seg/`, `critical_images/`, `sample_manifest.json`, `seg_class_map.json`, and `instance_seg_class_map.json`. Genetic-search result files and plots are written there as well.
 ## Replication
 
 A snapshot for the replication of the results in the paper is provided here: https://figshare.com/s/cb5b0eae0411e54b1bbd

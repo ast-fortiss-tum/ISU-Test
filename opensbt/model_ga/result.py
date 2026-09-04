@@ -329,15 +329,15 @@ class SimulationResult(Result):
         if search_config is not None:
             visualizer.write_search_config(self, save_folder, search_config)
         
-        try:
-            # output_metric.gd_analysis(self, save_folder)
-            output_metric.hypervolume_analysis(
-                self, save_folder, ref_point_hv=self.ref_point
-            )
-            # output_metric.spread_analysis(self, save_folder)
-        except Exception as e:
-            print("Hypervolume analysis not possible. Exception: ", e)
-            pass
+        # try:
+        #     # output_metric.gd_analysis(self, save_folder)
+        #     output_metric.hypervolume_analysis(
+        #         self, save_folder, ref_point_hv=self.ref_point
+        #     )
+        #     # output_metric.spread_analysis(self, save_folder)
+        # except Exception as e:
+        #     print("Hypervolume analysis not possible. Exception: ", e)
+        #     pass
 
         # visualizer.write_generations(self, save_folder)
         visualizer.write_calculation_properties(

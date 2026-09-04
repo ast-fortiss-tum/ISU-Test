@@ -2,7 +2,7 @@
 Run random sampling or genetic search for ISU scenarios and save Blender outputs.
 
 Example:
-    python scripts/generate_isu_data.py \
+    python scripts/generate_isu_render_and_canny.py \
         --population-size 4 \
         --n-generations 2 \
         --scene isu/blender/scenes/scene_v3.blend \
@@ -11,7 +11,7 @@ Example:
         --sut dummy
 
     # Random sampling mode:
-    python scripts/generate_isu_data.py \
+    python scripts/generate_isu_render_and_canny.py \
         --algorithm rs --population-size 100 \
         --output-dir results/scene_v3_rs --sut dummy
 """
@@ -31,7 +31,6 @@ if str(REPO_ROOT) not in sys.path:
 
 import pymoo
 import wandb
-import psutil
 from PIL import Image
 
 from opensbt.model_ga.individual import IndividualSimulated
@@ -133,79 +132,11 @@ def make_dirs(output_root: Path) -> dict[str, Path]:
     return paths
 
 
-def print_memory(stage: str) -> None:
-    process = psutil.Process(os.getpid())
-    rss_mb = process.memory_info().rss / (1024 * 1024)
-    print(f"[MEMORY] {stage}: RSS={rss_mb:.1f} MB")
-
-
 def rotate_canny_outputs(canny_dir: Path) -> None:
     for canny_path in canny_dir.glob("*_canny.png"):
         with Image.open(canny_path) as image:
             rotated = image.rotate(180)
             rotated.save(canny_path)
-
-
-def convert_depth_outputs(dirs: dict[str, Path]) -> None:
-    """Convert Blender depth EXRs to grayscale and colorized PNG images."""
-    try:
-        import OpenEXR
-    except ImportError as error:
-        print(f"[WARN] EXR to PNG conversion skipped: {error}")
-        return
-
-    magma_stops = np.array([
-        [0.001, 0.000, 0.014],
-        [0.094, 0.039, 0.224],
-        [0.251, 0.039, 0.416],
-        [0.478, 0.016, 0.439],
-        [0.706, 0.094, 0.369],
-        [0.906, 0.306, 0.196],
-        [0.988, 0.616, 0.149],
-        [0.988, 0.992, 0.749],
-    ], dtype=np.float32)
-
-    for depth_exr_path in sorted(dirs["depth"].joinpath("exr").glob("*_depth.exr")):
-        depth_png_path = dirs["depth_png"] / f"{depth_exr_path.stem}.png"
-        depth_vis_path = dirs["depth_vis"] / f"{depth_exr_path.stem}_vis.png"
-        try:
-            exr_file = OpenEXR.InputFile(str(depth_exr_path))
-            data_window = exr_file.header()["dataWindow"]
-            width = data_window.max.x - data_window.min.x + 1
-            height = data_window.max.y - data_window.min.y + 1
-            channels = exr_file.header()["channels"]
-            channel_name = "Z" if "Z" in channels else next(iter(channels))
-            depth_array = np.frombuffer(
-                exr_file.channel(channel_name), dtype=np.float32
-            ).reshape(height, width)
-
-            finite_depth = depth_array[np.isfinite(depth_array)]
-            if finite_depth.size == 0:
-                raise ValueError("depth image contains no finite values")
-            depth_min = finite_depth.min()
-            depth_max = finite_depth.max()
-            if depth_max > depth_min:
-                depth_normalized = (
-                    (np.nan_to_num(depth_array, nan=depth_max) - depth_min)
-                    / (depth_max - depth_min) * 65535
-                ).clip(0, 65535).astype(np.uint16)
-            else:
-                depth_normalized = np.zeros_like(depth_array, dtype=np.uint16)
-
-            Image.fromarray(depth_normalized, mode="I;16").save(str(depth_png_path))
-            depth_float = depth_normalized.astype(np.float32) / 65535.0
-            positions = depth_float * (len(magma_stops) - 1)
-            lower = np.floor(positions).astype(np.int32)
-            upper = np.minimum(lower + 1, len(magma_stops) - 1)
-            fraction = (positions - lower)[..., None]
-            depth_rgb = (
-                magma_stops[lower] * (1.0 - fraction)
-                + magma_stops[upper] * fraction
-            )
-            depth_rgb = (depth_rgb * 255).clip(0, 255).astype(np.uint8)
-            Image.fromarray(depth_rgb, mode="RGB").save(str(depth_vis_path))
-        except Exception as error:
-            print(f"[WARN] Depth visualization failed for {depth_exr_path.name}: {error}")
 
 
 def write_output_metadata(output_root: Path, scene_path: Path, features_config: Path,
@@ -278,7 +209,6 @@ def main() -> None:
         raise FileNotFoundError(f"Scene file not found: {scene_path}")
 
     dirs = make_dirs(output_root)
-    print_memory("after output directory setup")
     algorithm_label = "rs" if args.algorithm == "rs" else "ga"
     problem_name = f"isu_{algorithm_label}_{args.population_size}n_{args.n_generations}g_{args.seed}seed"
     setup_logging(str(output_root / "ga.log"))
@@ -366,16 +296,13 @@ def main() -> None:
         )
         optimizer = optimizer.resume(optimizer.save_folder)
         result = optimizer.run()
-    print_memory("after search")
     result.write_results(
         results_folder=optimizer.save_folder,
         params=optimizer.parameters,
         search_config=config,
         norm_bounds=norm_bounds,
     )
-    print_memory("after write_results")
     rotate_canny_outputs(dirs["canny"])
-    print_memory("after depth conversion")
     write_output_metadata(
         output_root=output_root,
         scene_path=scene_path,

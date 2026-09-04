@@ -3,6 +3,7 @@ import signal
 import os
 import subprocess
 import time
+import psutil
 from isu.config import BLENDER_APP_PATH, BLENDER_FILE_PATH, BLENDER_SCRIPT_PATH
 
 def run_blender(json_path: str, 
@@ -91,11 +92,27 @@ def run_blender(json_path: str,
             try:
                 #record start time
                 start_time = time.time()
-                proc.wait(timeout=timeout_sec)
+                child_process = psutil.Process(proc.pid)
+                peak_rss_mb = 0.0
+                while proc.poll() is None:
+                    try:
+                        peak_rss_mb = max(
+                            peak_rss_mb,
+                            child_process.memory_info().rss / (1024 * 1024),
+                        )
+                    except psutil.Error:
+                        pass
+                    if time.time() - start_time >= timeout_sec:
+                        raise subprocess.TimeoutExpired(cmd, timeout_sec)
+                    time.sleep(0.5)
                 #record end time
                 end_time = time.time()
                 elapsed_time = end_time - start_time
-                log.write(f"\n[Completed in {elapsed_time:.2f}s]\n")
+                log.write(
+                    f"\n[Completed in {elapsed_time:.2f}s; peak Blender RSS: "
+                    f"{peak_rss_mb:.1f} MB]\n"
+                )
+                print(f"[MEMORY] Blender peak RSS: {peak_rss_mb:.1f} MB")
             except subprocess.TimeoutExpired:
                 log.write(f"\n[Timeout after {timeout_sec}s] Killing Blender...\n")
                 os.killpg(proc.pid, signal.SIGTERM)
