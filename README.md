@@ -62,11 +62,22 @@ On systems where PowerShell script execution is restricted, activate the environ
 venv\Scripts\activate.bat
 ```
 
-### 2. Install Blender 5.1.2
+### 2. Configure the API for the tested SUT
+
+If the SUT being tested uses Azure OpenAI, create a `.env` file in the repository root with the endpoint and API key for that SUT:
+
+```dotenv
+AZURE_OPENAI_API_KEY=
+AZURE_OPENAI_ENDPOINT=
+```
+
+Fill in the values locally. Do not commit the API key or publish it in logs, screenshots, or documentation. The `.env` file is ignored by Git. If a key has been exposed, revoke it and create a replacement before using it again.
+
+### 3. Install Blender 5.1.2
 
 Download and install Blender 5.1.2 from the [official Blender downloads](https://www.blender.org/download/). The renderer is invoked in background mode using the Blender executable, so the installed version should match the version used for the scene and assets.
 
-### 3. Configure the Blender executable
+### 4. Configure the Blender executable
 
 Set `BLENDER_APP_PATH` in [isu/config.py](isu/config.py) to the full path of the installed Blender executable. For example, on Windows:
 
@@ -82,11 +93,11 @@ BLENDER_APP_PATH = "/Applications/Blender.app/Contents/MacOS/Blender"
 
 The scene and driver paths are configured in the same file through `BLENDER_FILE_PATH` and `BLENDER_SCRIPT_PATH`.
 
-### 4. Add the Blender scene
+### 5. Add the Blender scene
 
 Obtain the `.blend` file representing the desired scene and copy it into [isu/blender/scenes](isu/blender/scenes). The default scene is `scene_v3.blend`. Pass another scene with the `--scene` flag when running the unified generator.
 
-### 5. Download the required SMPL-X data and assets
+### 6. Download the required SMPL-X data and assets
 
 SMPL-X data and assets are not redistributed with this repository. Download them from the official project pages and review their license terms before use:
 
