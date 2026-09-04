@@ -11,6 +11,38 @@
 
 This project provides search-based generation and testing of in-car scene-understanding scenarios. The current entry point is [scripts/generate_isu_data.py](scripts/generate_isu_data.py). It supports both genetic search and random sampling, renders Blender scenes, evaluates the selected SUT, and writes the generated artifacts and metadata to a timestamped result folder.
 
+## Example outputs
+
+The following channel examples are from the random-sampling run in
+`docs/readme_assets/scene_v3_rs/`:
+
+<table align="center">
+  <tr>
+    <td><strong>RGB</strong><br /><img src="docs/readme_assets/scene_v3_rs/rgb.png" alt="Rendered RGB in-car scene" width="360" /></td>
+    <td><strong>Canny edges</strong><br /><img src="docs/readme_assets/scene_v3_rs/canny.png" alt="Canny edge channel" width="360" /></td>
+  </tr>
+  <tr>
+    <td><strong>Depth map</strong><br /><img src="docs/readme_assets/scene_v3_rs/depth.png" alt="Depth map channel" width="360" /></td>
+    <td><strong>Instance segmentation</strong><br /><img src="docs/readme_assets/scene_v3_rs/instance_segmentation.png" alt="Instance segmentation channel" width="360" /></td>
+  </tr>
+</table>
+
+For each successful sample, the pipeline can produce these image channels:
+
+| Channel | Output | Description |
+| --- | --- | --- |
+| RGB | `images/<sample>_sim.png` | Rendered Blender scene used as the primary input. |
+| Depth | `depth/exr/<sample>_depth.exr` | Normalized depth pass written by Blender as an OpenEXR file. |
+| Depth PNG | `depth/png/<sample>_depth.png` | 16-bit grayscale PNG conversion of the depth pass. |
+| Depth visualization | `depth/vis/<sample>_depth_vis.png` | Colorized PNG visualization of the depth pass. |
+| Semantic segmentation | `seg/<sample>_seg.png` | Pixel colors identify semantic classes such as human, phone, suitcase, baby seat, safety belt, beverage, car interior, exterior, blanket, and seat. |
+| Canny | `canny/<sample>_canny.png` | Geometry-edge image produced by the Blender Freestyle pass and rotated 180 degrees during post-processing. |
+| Instance segmentation | `instance_seg/<sample>_instance_seg.png` | Pixel colors identify individual scene instances, including occupants, phones, belts, beverages, suitcase, baby seat, baby, seats, and car regions. |
+
+The channel color definitions are written to `seg_class_map.json` and `instance_seg_class_map.json`. `sample_manifest.json` records the relative path and scenario parameters for every successful sample, as well as failed samples when applicable.
+
+The `labels/` folder contains one ground-truth JSON annotation file per sample. Each label file records the scenario feature values used to generate the corresponding image and segmentation channels.
+
 ## Getting started
 
 ### 1. Install Python dependencies
@@ -78,36 +110,6 @@ isu/blender/assets/human_texture/
 
 The filenames must match the texture names expected by the Blender driver. The SMPL-X, AGORA, and third-party texture sources have separate licensing terms; see [License & Attributions](#license--attributions) before using them.
 
-## Example outputs
-
-The following channel examples are from the random-sampling run in
-`docs/readme_assets/scene_v3_rs/`:
-
-<table align="center">
-  <tr>
-    <td><strong>RGB</strong><br /><img src="docs/readme_assets/scene_v3_rs/rgb.png" alt="Rendered RGB in-car scene" width="360" /></td>
-    <td><strong>Canny edges</strong><br /><img src="docs/readme_assets/scene_v3_rs/canny.png" alt="Canny edge channel" width="360" /></td>
-  </tr>
-  <tr>
-    <td><strong>Depth map</strong><br /><img src="docs/readme_assets/scene_v3_rs/depth.png" alt="Depth map channel" width="360" /></td>
-    <td><strong>Instance segmentation</strong><br /><img src="docs/readme_assets/scene_v3_rs/instance_segmentation.png" alt="Instance segmentation channel" width="360" /></td>
-  </tr>
-</table>
-
-For each successful sample, the pipeline can produce these image channels:
-
-| Channel | Output | Description |
-| --- | --- | --- |
-| RGB | `images/<sample>_sim.png` | Rendered Blender scene used as the primary input. |
-| Depth | `depth/exr/<sample>_depth.exr` | Normalized depth pass written by Blender as an OpenEXR file. |
-| Depth PNG | `depth/png/<sample>_depth.png` | 16-bit grayscale PNG conversion of the depth pass. |
-| Depth visualization | `depth/vis/<sample>_depth_vis.png` | Colorized PNG visualization of the depth pass. |
-| Semantic segmentation | `seg/<sample>_seg.png` | Pixel colors identify semantic classes such as human, phone, suitcase, baby seat, safety belt, beverage, car interior, exterior, blanket, and seat. |
-| Canny | `canny/<sample>_canny.png` | Geometry-edge image produced by the Blender Freestyle pass and rotated 180 degrees during post-processing. |
-| Instance segmentation | `instance_seg/<sample>_instance_seg.png` | Pixel colors identify individual scene instances, including occupants, phones, belts, beverages, suitcase, baby seat, baby, seats, and car regions. |
-
-The channel color definitions are written to `seg_class_map.json` and `instance_seg_class_map.json`. `sample_manifest.json` records the relative path and scenario parameters for every successful sample, as well as failed samples when applicable.
-
 ## Repository structure
 
 - [scripts/generate_isu_data.py](scripts/generate_isu_data.py): Unified random-sampling and genetic-search entry point.
@@ -172,7 +174,7 @@ python scripts/generate_isu_data.py \
 | `--max-time` | unset | Optional total search duration in `hh:mm:ss` format. |
 | `--no-wandb` | disabled | Disable Weights & Biases logging. Logging is enabled unless this flag is provided. |
 
-The generated result folder contains `json_inputs/`, `images/`, `depth/exr/`, `seg/`, `canny/`, `instance_seg/`, `critical_images/`, `sample_manifest.json`, `seg_class_map.json`, and `instance_seg_class_map.json`. Genetic-search result files and plots are written there as well.
+The generated result folder contains `json_inputs/`, `labels/`, `images/`, `depth/exr/`, `seg/`, `canny/`, `instance_seg/`, `critical_images/`, `sample_manifest.json`, `seg_class_map.json`, and `instance_seg_class_map.json`. Genetic-search result files and plots are written there as well.
 ## Replication
 
 A snapshot for the replication of the results in the paper is provided here: https://figshare.com/s/cb5b0eae0411e54b1bbd
