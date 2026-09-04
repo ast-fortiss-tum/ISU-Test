@@ -1,6 +1,9 @@
 <div align="center">
   <h1>ISU-Test: Search-based Testing of Vision Language Models for In-Car Scene Understanding</h1>
-  <p><a href="https://doi.org/10.1145/3832783.3834506"><img src="https://img.shields.io/badge/DOI-10.1145%2F3832783.3834506-blue" alt="DOI" /></a></p>
+  <p>
+    <a href="https://doi.org/10.1145/3832783.3834506"><img src="https://img.shields.io/badge/DOI-10.1145%2F3832783.3834506-blue" alt="DOI" /></a>
+    <a href="https://huggingface.co/datasets/ISU-Test/isu-challenge-dataset"><img src="https://img.shields.io/badge/Hugging%20Face-Dataset-yellow" alt="Hugging Face dataset" /></a>
+  </p>
   <p>Dynamic test case generation and search-based testing for vision-language in-car scene understanding.</p>
 </div>
 
@@ -14,9 +17,9 @@ This project provides search-based generation and testing of in-car scene-unders
 
 From the repository root, create and activate a virtual environment, then install the dependencies listed in [requirements.txt](requirements.txt):
 
-```powershell
+```bash
 python -m venv venv
-.\venv\Scripts\Activate.ps1
+source venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
