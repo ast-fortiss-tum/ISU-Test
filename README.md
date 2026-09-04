@@ -200,8 +200,6 @@ ISU-Test is released under the [MIT License](LICENSE). Copyright is held by Lev 
 
 SMPL-X Body was used for character animation courtesy of the Max Planck Institute for Intelligent Systems. 
 
-Authors: Lev Sorokin, Rifaath Ameen (BMW), Chen Yang, Ken E. Friedl, and Andrea Stocco.
-
 ## Citation
 
 If you use **ISU-Test** in your research, please cite the accompanying ASE 2026 paper:
