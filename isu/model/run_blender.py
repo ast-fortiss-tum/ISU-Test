@@ -7,6 +7,10 @@ from isu.config import BLENDER_APP_PATH, BLENDER_FILE_PATH, BLENDER_SCRIPT_PATH
 
 def run_blender(json_path: str, 
                 image_output_dir:str,
+                depth_output_dir: str = None,
+                seg_output_dir: str = None,
+                canny_output_dir: str = None,
+                instance_seg_output_dir: str = None,
                 blender_exe=BLENDER_APP_PATH,      
                 blend_file=BLENDER_FILE_PATH,
                 blender_python_script=BLENDER_SCRIPT_PATH,
@@ -18,9 +22,27 @@ def run_blender(json_path: str,
     json_path = Path(json_path).resolve()
     image_output_dir = Path(image_output_dir).resolve()
     image_path = image_output_dir / (json_path.stem + "_sim.png")
+    depth_path = (
+        Path(depth_output_dir).resolve() / "exr" / (json_path.stem + "_depth.exr")
+        if depth_output_dir else None
+    )
+    seg_path = (
+        Path(seg_output_dir).resolve() / (json_path.stem + "_seg.png")
+        if seg_output_dir else None
+    )
+    canny_path = (
+        Path(canny_output_dir).resolve() / (json_path.stem + "_canny.png")
+        if canny_output_dir else None
+    )
+    instance_seg_path = (
+        Path(instance_seg_output_dir).resolve() / (json_path.stem + "_instance_seg.png")
+        if instance_seg_output_dir else None
+    )
     log_path = project_root / f"isu/blender/blender_simulation_{Path(json_path).parent.parent.parent.name}.log"
-    if not os.path.exists(image_output_dir):
-        os.makedirs(image_output_dir, exist_ok=True)
+    image_output_dir.mkdir(parents=True, exist_ok=True)
+    for output_path in (depth_path, seg_path, canny_path, instance_seg_path):
+        if output_path is not None:
+            output_path.parent.mkdir(parents=True, exist_ok=True)
 
     # blender --background your_scene.blend --python blender_driver.py -- input.json output.png
     def build_cmd(force_cpu=False):
@@ -35,6 +57,14 @@ def run_blender(json_path: str,
             str(json_path),
             str(image_path),
         ]
+        if depth_path is not None:
+            cmd.append(str(depth_path))
+        if seg_path is not None:
+            cmd.extend(["--seg-path", str(seg_path)])
+        if canny_path is not None:
+            cmd.extend(["--canny-path", str(canny_path)])
+        if instance_seg_path is not None:
+            cmd.extend(["--instance-seg-path", str(instance_seg_path)])
         if force_cpu:
             cmd.append("--force-cpu")  # your driver_rgb.py should obey this
         return cmd

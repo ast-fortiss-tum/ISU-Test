@@ -100,9 +100,11 @@ A snapshot for the replication of the results in the paper is provided here: htt
 
 A generated dataset of interior scenes with ISU-Test will be provided soon.
 
-## License
+## License & Attributions
 
 See [LICENSE](LICENSE) for licensing information.
+
+SMPL-X Body was used for character animation courtesy of the Max Planck Institute for Intelligent Systems. 
 
 ## Citation
 
