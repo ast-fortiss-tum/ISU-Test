@@ -206,7 +206,7 @@ If you use **ISU-Test** in your research, please cite the accompanying ASE 2026 
 
 ```bibtex
 @inproceedings{sorokin2026isutest,
-  author    = {Lev Sorokin and Rifaath Ameen and Chen Yang and Ken E. Friedl and Andrea Stocco},
+  author    = {Lev Sorokin and Chen Yang and Ken E. Friedl and Andrea Stocco},
   title     = {Search-based Testing of Vision Language Models for In-Car Scene Understanding},
   booktitle = {Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE 2026), Industry Track},
   year      = {2026},
