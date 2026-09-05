@@ -329,28 +329,28 @@ class SimulationResult(Result):
         if search_config is not None:
             visualizer.write_search_config(self, save_folder, search_config)
         
-        try:
-            # output_metric.gd_analysis(self, save_folder)
-            output_metric.hypervolume_analysis(
-                self, save_folder, ref_point_hv=self.ref_point
-            )
-            # output_metric.spread_analysis(self, save_folder)
-        except Exception as e:
-            print("Hypervolume analysis not possible. Exception: ", e)
-            pass
+        # try:
+        #     # output_metric.gd_analysis(self, save_folder)
+        #     output_metric.hypervolume_analysis(
+        #         self, save_folder, ref_point_hv=self.ref_point
+        #     )
+        #     # output_metric.spread_analysis(self, save_folder)
+        # except Exception as e:
+        #     print("Hypervolume analysis not possible. Exception: ", e)
+        #     pass
 
-        visualizer.write_generations(self, save_folder)
+        # visualizer.write_generations(self, save_folder)
         visualizer.write_calculation_properties(
             self, save_folder, algorithm_name, algorithm_parameters=params
         )
 
         # visualizer.objective_space(self, save_folder)
-        visualizer.optimal_individuals(self, save_folder)
+        # visualizer.optimal_individuals(self, save_folder)
         visualizer.all_critical_individuals(self, save_folder)
         visualizer.write_summary_results(self, save_folder, params=params)
-        isu_output.write_failures_over_time(self, save_folder, interval=100)
+        # isu_output.write_failures_over_time(self, save_folder, interval=100)
 
-        isu_output.copy_config(save_folder)
+        # isu_output.copy_config(save_folder)
 
         # visualizer.write_simulation_output(self,save_folder,
         #                                    mode= config.MODE_WRITE_SIMOUT,
@@ -369,8 +369,8 @@ class SimulationResult(Result):
         visualizer.all_individuals(self, save_folder)
         #visualizer_llm.all_individuals_llm(self, save_folder)
 
-        isu_output.calculate_diversity(self, save_folder, **kwargs)
-        isu_output.write_novelty_archive_to_json(self, save_folder)
+        # isu_output.calculate_diversity(self, save_folder, **kwargs)
+        # isu_output.write_novelty_archive_to_json(self, save_folder)
 
         failures, total_evaluations, ratio, total_instances = calculate_failures_found(save_folder)
         print(f"Failures found: {failures}")
@@ -378,7 +378,7 @@ class SimulationResult(Result):
         print(f"Failure ratio: {ratio:.2f}")
         print(f"Total instances: {total_instances}")
         
-        visualizer.backup_problem(self, save_folder)
+        # visualizer.backup_problem(self, save_folder)
 
         artifact = wandb.Artifact("results_folder", "output")
         artifact.add_dir(save_folder)

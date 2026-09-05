@@ -60,6 +60,8 @@ class CriticalMerged(Critical):
         self.criticals = criticals
         self.mode = mode
         self.critical_save_folder = critical_save_folder
+        if self.critical_save_folder:
+            os.makedirs(self.critical_save_folder, exist_ok=True)
 
     def name(self) -> str:
         crit_names = []

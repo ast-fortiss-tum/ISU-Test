@@ -34,6 +34,64 @@ def reset_expression_and_jaw(obj):
         jaw.rotation_quaternion = Quaternion()  # identity
     print("[OK] expression + jaw reset to neutral.")
 
+def apply_head_rotation(obj, yaw_degrees=0.0):
+    """Apply head rotation (yaw in degrees) to the neck bone.
+    
+    Args:
+        obj: SMPL-X mesh or armature object
+        yaw_degrees: Rotation angle in degrees around Y-axis (positive = look right, negative = look left)
+    """
+    arm, mesh = get_arm_and_mesh(obj)
+    
+    # Try to find the neck bone (typically used for head rotation in SMPL-X)
+    neck_bone = arm.pose.bones.get("neck")
+    if not neck_bone:
+        print(f"[WARN] No 'neck' bone found in armature")
+        return
+    
+    # Set rotation mode and apply quaternion rotation
+    neck_bone.rotation_mode = 'QUATERNION'
+    
+    # Convert degrees to radians and create rotation quaternion around Y-axis
+    yaw_rad = math.radians(yaw_degrees)
+    rotation_quat = Quaternion((math.cos(yaw_rad / 2), 0, math.sin(yaw_rad / 2), 0))
+    
+    # Apply rotation (multiply to compose with existing rotation if any)
+    neck_bone.rotation_quaternion = rotation_quat
+    print(f"[OK] Applied head yaw {yaw_degrees:.1f}° to {obj.name}")
+
+def apply_left_hand_over_knee(obj):
+    """Position the front passenger's left hand over the knee as default pose.
+    
+    Uses simple rotation angles instead of complex quaternions to avoid arm twisting.
+    
+    Args:
+        obj: SMPL-X mesh or armature object
+    """
+    arm, mesh = get_arm_and_mesh(obj)
+    
+    # Set left shoulder rotation - rotate down (pitch down) and slightly back
+    left_shoulder = arm.pose.bones.get("left_shoulder")
+    if left_shoulder:
+        left_shoulder.rotation_mode = 'XYZ'
+        # Pitch down ~45 degrees (rotation around X), Yaw back ~20 degrees (rotation around Z)
+        left_shoulder.rotation_euler = (math.radians(-45), 0, math.radians(-20))
+    
+    # Set left elbow rotation - bend elbow ~100 degrees  
+    left_elbow = arm.pose.bones.get("left_elbow")
+    if left_elbow:
+        left_elbow.rotation_mode = 'XYZ'
+        # Simple bend along X axis
+        left_elbow.rotation_euler = (math.radians(-100), 0, 0)
+    
+    # Set left wrist rotation - keep neutral
+    left_wrist = arm.pose.bones.get("left_wrist")
+    if left_wrist:
+        left_wrist.rotation_mode = 'XYZ'
+        left_wrist.rotation_euler = (0, 0, 0)
+    
+    print(f"[OK] Positioned left hand over knee for {obj.name}")
+
 def apply_expression_from_pkl(filepath, obj):
     arm, mesh = get_arm_and_mesh(obj)
     with open(filepath, "rb") as f:
@@ -325,7 +383,7 @@ def smplx_set_texture(obj: bpy.types.Object, texture: str) -> bool:
         texture_path = texture
         if not os.path.isfile(texture_path):
             raise ValueError(f"smplx_set_texture: image file does not exist: {texture_path}")
-        image = bpy.data.images.load(texture_path)
+        image = bpy.data.images.load(str(texture_path))
 
     node_texture.image = image
 

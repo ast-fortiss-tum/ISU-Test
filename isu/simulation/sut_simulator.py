@@ -9,23 +9,35 @@ from opensbt.simulation.simulator import Simulator, SimulationOutputBase
 from dataclasses import dataclass
 from json_repair import repair_json
         
-#from isu.sut.moondream import response_Moondream
-from isu.sut.GPT4o import response_GPT4o
-from isu.sut.gpt5 import response_GPT5
-from isu.sut.isu_bmw import response_ISU
-from isu.sut.gemini import response_gemini
+# SUT adapters are imported inside evaluate_image() so unused models are not initialized.
 import time
 import os
 from isu.simulation.prompt import *
 
 feature_weight_map = {
-    "gender": 0.05,
-    "emotion": 0.05,
-    "phone_driver": 0.1,
-    "safety_belt": 0.1,
+    "driver_gender": 0.04,
+    "driver_tshirt_color": 0.04,
+    "driver_emotion": 0.04,
+    "driver_phone": 0.04,
+    "driver_safety_belt": 0.04,
+    "passenger_codriver": 0.04,
+    "passenger_codriver_tshirt_color": 0.04,
+    "passenger_codriver_emotion": 0.04,
+    "codriver_safety_belt": 0.04,
+    "passenger_back_seat_left": 0.04,
+    "passenger_rear_left_tshirt_color": 0.04,
+    "passenger_rear_left_emotion": 0.04,
+    "passenger_rear_left_safety_belt": 0.04,
+    "passenger_back_seat_right": 0.04,
+    "passenger_rear_right_tshirt_color": 0.04,
+    "passenger_rear_right_emotion": 0.04,
+    "passenger_rear_right_safety_belt": 0.04,
     "suitcase": 0.1,
+    "suitcase_color": 0.04,
     "suitcase_location": 0.1,
+    "suitcase_pose": 0.04,
     "phone_codriver_seat": 0.1,
+    "phone_codriver_seat_color": 0.04,
     "colabottle_codriver_seat": 0.05,
     "colacan_codriver_seat": 0.05,
     "baby_seat": 0.1,
@@ -60,10 +72,10 @@ class ISUSimulator(Simulator):
         results = []  
         
         for scenario in list_individuals: 
-            if sut == "isu-bmw":
-                wait_time = 1  # seconds
-                print(f"Waiting for {wait_time} seconds before evaluating the next image...")
-                time.sleep(wait_time)
+            # if sut == "isu-bmw":
+            #     wait_time = 1  # seconds
+            #     print(f"Waiting for {wait_time} seconds before evaluating the next image...")
+            #     time.sleep(wait_time)
             scenario = scenario[0]
             predicts_dict, raw_result, last_error = ISUSimulator.evaluate_image(scenario.image_path_sim2real, sut=sut)
             ISUSimulator.log_simulation_output(raw_result, scenario.image_path_sim, tartget_folder="output_predictions" )
@@ -104,23 +116,25 @@ class ISUSimulator(Simulator):
 
         if sut == "dummy":
             return fallback_result, fallback_result, None
-S        
         # other SUTs
         user_prompt = ISUSimulator.get_user_prompt(prompt_version, feature_names)
         last_error = None
         raw_result = None
         if sut == "gpt4o":
             try:
+                from isu.sut.GPT4o import response_GPT4o
                 raw_result = response_GPT4o(user_prompt, "", image_path)
             except Exception as e:
                 last_error = e
         elif sut == "gpt5":
             try:
+                from isu.sut.gpt5 import response_GPT5
                 raw_result = response_GPT5(user_prompt, "", image_path)
             except Exception as e:
                 last_error = e
         elif sut == "gemini-2.5" or sut == "gemini-2.0":
             try:
+                from isu.sut.gemini import response_gemini
                 raw_result = response_gemini(image_path, user_prompt, version=sut.split("-")[1])
             except Exception as e:
                 last_error = e
@@ -154,23 +168,38 @@ from opensbt.simulation.simulator import Simulator, SimulationOutputBase
 from dataclasses import dataclass
 from json_repair import repair_json
         
-#from isu.sut.moondream import response_Moondream
-from isu.sut.GPT4o import response_GPT4o
-from isu.sut.gpt5 import response_GPT5
-from isu.sut.isu_bmw import response_ISU
-from isu.sut.gemini import response_gemini
+# from isu.sut.moondream import response_Moondream
+# from isu.sut.GPT4o import response_GPT4o
+# from isu.sut.gpt5 import response_GPT5
+# from isu.sut.gemini import response_gemini
 import time
 import os
 from isu.simulation.prompt import *
 
 feature_weight_map = {
-    "gender": 0.05,
-    "emotion": 0.05,
-    "phone_driver": 0.1,
-    "safety_belt": 0.1,
+    "driver_gender": 0.04,
+    "driver_tshirt_color": 0.04,
+    "driver_emotion": 0.04,
+    "driver_phone": 0.04,
+    "driver_safety_belt": 0.04,
+    "passenger_codriver": 0.04,
+    "passenger_codriver_tshirt_color": 0.04,
+    "passenger_codriver_emotion": 0.04,
+    "codriver_safety_belt": 0.04,
+    "passenger_back_seat_left": 0.04,
+    "passenger_rear_left_tshirt_color": 0.04,
+    "passenger_rear_left_emotion": 0.04,
+    "passenger_rear_left_safety_belt": 0.04,
+    "passenger_back_seat_right": 0.04,
+    "passenger_rear_right_tshirt_color": 0.04,
+    "passenger_rear_right_emotion": 0.04,
+    "passenger_rear_right_safety_belt": 0.04,
     "suitcase": 0.1,
+    "suitcase_color": 0.04,
     "suitcase_location": 0.1,
+    "suitcase_pose": 0.04,
     "phone_codriver_seat": 0.1,
+    "phone_codriver_seat_color": 0.04,
     "colabottle_codriver_seat": 0.05,
     "colacan_codriver_seat": 0.05,
     "baby_seat": 0.1,
@@ -205,10 +234,10 @@ class ISUSimulator(Simulator):
         results = []  
         
         for scenario in list_individuals: 
-            if sut == "isu-bmw":
-                wait_time = 1  # seconds
-                print(f"Waiting for {wait_time} seconds before evaluating the next image...")
-                time.sleep(wait_time)
+            # if sut == "isu-bmw":
+            #     wait_time = 1  # seconds
+            #     print(f"Waiting for {wait_time} seconds before evaluating the next image...")
+            #     time.sleep(wait_time)
             scenario = scenario[0]
             predicts_dict, raw_result, last_error = ISUSimulator.evaluate_image(scenario.image_path_sim2real, sut=sut)
             ISUSimulator.log_simulation_output(raw_result, scenario.image_path_sim, tartget_folder="output_predictions" )
@@ -249,23 +278,28 @@ class ISUSimulator(Simulator):
 
         if sut == "dummy":
             return fallback_result, fallback_result, None
-S        
+        # Sanity check for feature_names
+        if not feature_names:
+            raise ValueError("feature_names must be provided.")
         # other SUTs
         user_prompt = ISUSimulator.get_user_prompt(prompt_version, feature_names)
         last_error = None
         raw_result = None
         if sut == "gpt4o":
             try:
+                from isu.sut.GPT4o import response_GPT4o
                 raw_result = response_GPT4o(user_prompt, "", image_path)
             except Exception as e:
                 last_error = e
         elif sut == "gpt5":
             try:
+                from isu.sut.gpt5 import response_GPT5
                 raw_result = response_GPT5(user_prompt, "", image_path)
             except Exception as e:
                 last_error = e
         elif sut == "gemini-2.5" or sut == "gemini-2.0":
             try:
+                from isu.sut.gemini import response_gemini
                 raw_result = response_gemini(image_path, user_prompt, version=sut.split("-")[1])
             except Exception as e:
                 last_error = e

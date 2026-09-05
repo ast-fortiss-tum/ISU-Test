@@ -8,12 +8,11 @@ import os
 import time
 import json
 from .run_blender import run_blender
-from .call_sim2real import call_sim2real
-from .run_vlm_features import run_vlm_features
+# from .call_sim2real import call_sim2real
 from isu.features.models import FeatureType
 
 from opensbt.config import RESULTS_FOLDER
-from isu.config import SIM2REAL, VLM_FEATURES
+from isu.config import BLENDER_FILE_PATH
 output_dir = str(os.getcwd()) + os.sep + RESULTS_FOLDER
 
 class ScenarioGenerator(ABC):
@@ -37,12 +36,22 @@ class BlenderScenarioGenerator(ScenarioGenerator):
                  json_output_dir: str,
                  image_output_dir: str,
                  feature_handler: Optional[FeatureHandler] = None,
-                 apply_constrains_to_vars: bool = True):
+                 apply_constrains_to_vars: bool = True,
+                 depth_output_dir: Optional[str] = None,
+                 seg_output_dir: Optional[str] = None,
+                 canny_output_dir: Optional[str] = None,
+                 instance_seg_output_dir: Optional[str] = None,
+                 blend_file: Optional[str] = None):
         super().__init__(feature_handler=feature_handler)
         self.problem_name = problem_name
         self.json_output_dir = json_output_dir
         self.image_output_dir = image_output_dir
         self.apply_constrains_to_vars = apply_constrains_to_vars
+        self.depth_output_dir = depth_output_dir
+        self.seg_output_dir = seg_output_dir
+        self.canny_output_dir = canny_output_dir
+        self.instance_seg_output_dir = instance_seg_output_dir
+        self.blend_file = blend_file
 
     def _get_content_input(self, feature_values: Dict[str, Any]) -> BlenderContentInput:
         return BlenderContentInput.model_validate(feature_values)
@@ -82,9 +91,23 @@ class BlenderScenarioGenerator(ScenarioGenerator):
 
         if render:
             json_path = self.write_params_to_json(params=content_input.model_dump(), json_output_dir=self.json_output_dir)
-            image_path_sim = run_blender(json_path=json_path, image_output_dir=self.image_output_dir)
-            run_vlm_features(json_path=json_path, image_path=image_path_sim, dummy=not VLM_FEATURES)
-            image_path_sim2real = call_sim2real(image_path_sim, dummy=not SIM2REAL, gt=content_input.model_dump())
+            image_path_sim = run_blender(
+                json_path=json_path,
+                image_output_dir=self.image_output_dir,
+                depth_output_dir=self.depth_output_dir,
+                seg_output_dir=self.seg_output_dir,
+                canny_output_dir=self.canny_output_dir,
+                instance_seg_output_dir=self.instance_seg_output_dir,
+                blend_file=self.blend_file or BLENDER_FILE_PATH,
+            )
+            # VLM feature conversion is disabled.
+            # Sim2Real conversion is disabled; use the rendered simulation image.
+            # image_path_sim2real = call_sim2real(
+            #     image_path_sim,
+            #     dummy=not SIM2REAL,
+            #     gt=content_input.model_dump(),
+            # )
+            image_path_sim2real = ""
         else:
             json_path = ""
             image_path_sim = ""
@@ -101,84 +124,73 @@ class BlenderScenarioGenerator(ScenarioGenerator):
 
         
     def apply_constraints(self, content_input: BlenderContentInput) -> BlenderContentInput:
-        if content_input.participant_driver == "LEV":
-            content_input.gender = "MALE"
-            content_input.height_m = 1.94
-            content_input.weight_kg = 86
-        elif content_input.participant_driver == "STEPAN":
-            content_input.gender = "MALE"
-            content_input.height_m = 1.89
-            content_input.weight_kg = 75
-        elif content_input.participant_driver == "IVAN":
-            content_input.gender = "MALE"
-            content_input.height_m = 1.78
-            content_input.weight_kg = 100
-        elif content_input.participant_driver == "KEN":
-            content_input.gender = "MALE"
-            content_input.height_m = 1.80
-            content_input.weight_kg = 85
-        elif content_input.participant_driver == "CHEN":
-            content_input.gender = "FEMALE"
-            content_input.height_m = 1.67
-            content_input.weight_kg = 52
-
-        if content_input.phone_driver == "NO":
-            content_input.phone_driver_pose_frame = None
-            
         if content_input.suitcase == "NO":
             content_input.suitcase_color = None
             content_input.suitcase_location = None
+            content_input.suitcase_pose = None
 
         if content_input.baby_seat == "NO":
             content_input.baby_seat_orientation = None
-            # content_input.baby_seat_safety_belt = None
             content_input.baby = None
-        # if baby seat is present, no other objects allowed on co-driver seat
         else:
+            content_input.phone_codriver_seat = "NO"
+            content_input.colabottle_codriver_seat = "NO"
+            content_input.colacan_codriver_seat = "NO"
+            content_input.passenger_codriver = "NO"
+            content_input.codriver_safety_belt = "NO"
+            if content_input.suitcase_location == "CO_DRIVER_SEAT":
+                content_input.suitcase_location = "REAR_SEAT"
+
+        if content_input.passenger_codriver == "YES":
             content_input.phone_codriver_seat = "NO"
             content_input.colabottle_codriver_seat = "NO"
             content_input.colacan_codriver_seat = "NO"
             if content_input.suitcase_location == "CO_DRIVER_SEAT":
                 content_input.suitcase_location = "REAR_SEAT"
+        elif (
+            content_input.phone_codriver_seat == "YES"
+            or content_input.colabottle_codriver_seat == "YES"
+            or content_input.colacan_codriver_seat == "YES"
+            or content_input.suitcase_location == "CO_DRIVER_SEAT"
+        ):
+            content_input.passenger_codriver = "NO"
+            content_input.codriver_safety_belt = "NO"
+            content_input.passenger_codriver_tshirt_color = None
+            content_input.passenger_codriver_emotion = None
+            content_input.passenger_codriver_head_angle = None
+        elif content_input.passenger_codriver == "NO":
+            content_input.codriver_safety_belt = "NO"
+            content_input.passenger_codriver_tshirt_color = None
+            content_input.passenger_codriver_emotion = None
+            content_input.passenger_codriver_head_angle = None
 
-        if content_input.suitcase_location == "CO_DRIVER_SEAT":
-            if content_input.phone_codriver_seat == "YES" or content_input.colabottle_codriver_seat == "YES" or content_input.colacan_codriver_seat == "YES":
-                content_input.suitcase_location = "REAR_SEAT"
+        if content_input.suitcase_location == "CO_DRIVER_SEAT" and (
+            content_input.phone_codriver_seat == "YES"
+            or content_input.colabottle_codriver_seat == "YES"
+            or content_input.colacan_codriver_seat == "YES"
+            or content_input.passenger_codriver == "YES"
+        ):
+            content_input.suitcase_location = "REAR_SEAT"
 
         if content_input.suitcase_location != "REAR_SEAT":
             content_input.suitcase_pose = None
-            content_input.suitcase_rotation = None
-        elif content_input.suitcase_location == "REAR_SEAT" and content_input.suitcase_pose == "UPWARDS":
-            content_input.suitcase_rotation = None
         
         if content_input.phone_codriver_seat == "NO":
             content_input.phone_codriver_seat_color = None
 
-        if content_input.env_light_discrete == "MEDIUM":
-            content_input.env_strength = 0.5
-            content_input.exposure_compensation = 2.0
-        elif content_input.env_light_discrete == "HIGH":
-            content_input.env_strength = 1.0
-            content_input.exposure_compensation = 0.0
+        if content_input.passenger_back_seat_left != "YES":
+            content_input.passenger_back_seat_left = "NO"
+            content_input.passenger_rear_left_safety_belt = "NO"
+            content_input.passenger_rear_left_tshirt_color = None
+            content_input.passenger_rear_left_emotion = None
+            content_input.passenger_rear_left_head_angle = None
 
-        # if content_input.env_strength > 2.0:
-        #     content_input.light_front = 0.0
-        #     content_input.light_back_left = 0.0
-        #     content_input.light_back_right = 0.0
-        # elif content_input.env_strength < 0.5:
-        #     content_input.in_car_light = "ON"
-
-
-        off_strength = 0.0
-        on_strength = 0.5
-        if content_input.in_car_light == "ON":
-            content_input.light_front = on_strength
-            content_input.light_back_left = on_strength
-            content_input.light_back_right = on_strength
-        elif content_input.in_car_light == "OFF":
-            content_input.light_front = off_strength
-            content_input.light_back_left = off_strength
-            content_input.light_back_right = off_strength
+        if content_input.passenger_back_seat_right != "YES":
+            content_input.passenger_back_seat_right = "NO"
+            content_input.passenger_rear_right_safety_belt = "NO"
+            content_input.passenger_rear_right_tshirt_color = None
+            content_input.passenger_rear_right_emotion = None
+            content_input.passenger_rear_right_head_angle = None
 
         return content_input
     

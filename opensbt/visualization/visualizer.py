@@ -85,15 +85,15 @@ def create_save_folder(problem_name: str,
 
     print("[create save folder] path:", results_folder)
 
-    # here we consider the results folder already as save folder
-    if Path(results_folder).is_dir():
-        print("path is existing folder")
-        return results_folder
-    
-    # Use default if results_folder is None
+    # Use the configured default when no result root was supplied.
     if results_folder is None:
         results_folder = RESULTS_FOLDER
 
+    # here we consider the results folder already as save folder
+    if Path(results_folder).is_dir():
+        print("path is existing folder")
+        return str(Path(results_folder)) + os.sep
+    
     # Determine folder name
     if folder_name:
         final_folder_name = folder_name
@@ -1377,6 +1377,6 @@ def plot_timeseries(res, save_folder, mode="crit", type="X", max="100"):
 
 
 def write_search_config(res: Result, save_folder: str, config: SearchConfiguration):
-    with open(save_folder + "search_config.json", "w") as f:
+    with open(Path(save_folder) / "search_config.json", "w") as f:
         f.write(config.model_dump_json(indent=4))
         wandb.log(config.model_dump())

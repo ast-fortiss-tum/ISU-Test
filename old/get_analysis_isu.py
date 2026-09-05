@@ -18,5 +18,5 @@ last_values_table(project, ["failures", "critical_ratio"], path=os.path.join(pat
 boxplots(project, (18, 4), "failures", file_name=os.path.join(path, "failures_final.pdf"))
 boxplots(project, (18, 4), "critical_ratio", file_name=os.path.join(path, "critical_ratio_final.pdf"))
 
-diversity_report(project, input=True, output_path=path)
-diversity_report(project, input=False, output_path=path)
+# diversity_report(project, input=True, output_path=path)
+# diversity_report(project, input=False, output_path=path)

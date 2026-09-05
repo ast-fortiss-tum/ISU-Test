@@ -1,62 +1,131 @@
-# ISU-Test: Search-based Testing of Vision Language Models for In-Car Scene Understanding
-
-[![DOI](https://img.shields.io/badge/DOI-10.1145%2F3832783.3834506-blue)](https://doi.org/10.1145/3832783.3834506)
-
-<table align="center">
-  <tr>
-    <td><img src="docs/ex_1.png" alt="example 1" width="360" /></td>
-    <td><img src="docs/ex_2.png" alt="example 2" width="360" /></td>
-  </tr>
-</table>
-
-Find the edge cases: search-driven scenario generation and testing for vision-language in-car scene understanding.
+<div align="center">
+  <h1>ISU-Test: Search-based Testing of Vision Language Models for In-Car Scene Understanding</h1>
+  <p>
+    <a href="https://doi.org/10.1145/3832783.3834506"><img src="https://img.shields.io/badge/DOI-10.1145%2F3832783.3834506-blue" alt="DOI" /></a>
+    <a href="https://huggingface.co/datasets/ISU-Test/isu-challenge-dataset"><img src="https://img.shields.io/badge/Hugging%20Face-Dataset-yellow" alt="Hugging Face dataset" /></a>
+  </p>
+  <p>Dynamic test case generation and search-based testing for vision-language in-car scene understanding.</p>
+</div>
 
 ## Overview
 
-This project provides:
-- Reproducible experiment wrappers and runner (`run_experiments_isu_*.sh`, `run_tests_isu.py`).
-- Implementations of search algorithms and baselines (e.g., `nsga2`, random search).
-- LLM integration layer and SUT adapters (e.g., `gpt5`, `moondream`, `gemini-2.5`).
-- Scenario generation, simulation, and evaluation pipelines (feature configs, fitness, similarity, critical checks).
-- Analysis and visualization scripts for experiment outputs.
-- Config-driven setup for running reproducible, logged experiments.
+This project provides search-based generation and testing of in-car scene-understanding scenarios. The current entry point is [scripts/generate_isu_data.py](scripts/generate_isu_data.py). It supports both genetic search and random sampling, renders Blender scenes, evaluates the selected SUT, and writes the generated artifacts and metadata to a timestamped result folder.
 
-## Main execution
+## Example outputs
 
-Primary experiment wrapper scripts:
+The following channel examples are from the random-sampling run in
+`docs/readme_assets/scene_v3_rs/`:
 
-- [run_experiments_isu_gpt.sh](run_experiments_isu_gpt.sh): Runs experiments targeting `gpt5` SUT and related configurations.
-- [run_experiments_isu_gemini.sh](run_experiments_isu_gemini.sh): Runs experiments for Gemini SUTs.
-- [run_experiments_isu_dummy.sh](run_experiments_isu_dummy.sh): Quick/dummy experiment runner for local tests.
+<table align="center">
+  <tr>
+    <td><strong>RGB</strong><br /><img src="docs/readme_assets/scene_v3_rs/rgb.png" alt="Rendered RGB in-car scene" width="360" /></td>
+    <td><strong>Canny edges</strong><br /><img src="docs/readme_assets/scene_v3_rs/canny.png" alt="Canny edge channel" width="360" /></td>
+  </tr>
+  <tr>
+    <td><strong>Depth map</strong><br /><img src="docs/readme_assets/scene_v3_rs/depth.png" alt="Depth map channel" width="360" /></td>
+    <td><strong>Instance segmentation</strong><br /><img src="docs/readme_assets/scene_v3_rs/instance_segmentation.png" alt="Instance segmentation channel" width="360" /></td>
+  </tr>
+</table>
 
-These scripts set variables used when invoking `run_tests_isu.py`, for example:
+For each successful sample, the pipeline can produce these image channels:
 
-- `suts=("gpt5")` — list of SUTs to iterate over (examples: `gemini-2.5`, `moondream`, `isu-bmw`, `dummy`).
-- `algorithms=("nsga2" "rs")` — algorithms to run (e.g., `nsga2`, `rs`).
-- `budget="03:00:00"` — maximum runtime budget for each experiment.
-- `script="run_tests_isu.py"` — main Python entrypoint invoked by the wrappers.
-- `config_file="configs/isu_features.json"` — features/configuration file used by experiments.
+| Channel | Output | Description |
+| --- | --- | --- |
+| RGB | `images/<sample>_sim.png` | Rendered Blender scene used as the primary input. |
+| Depth | `depth/exr/<sample>_depth.exr` | Normalized depth pass written by Blender as an OpenEXR file. |
+| Depth PNG | `depth/png/<sample>_depth.png` | 16-bit grayscale PNG conversion of the depth pass. |
+| Depth visualization | `depth/vis/<sample>_depth_vis.png` | Colorized PNG visualization of the depth pass. |
+| Semantic segmentation | `seg/<sample>_seg.png` | Pixel colors identify semantic classes such as human, phone, suitcase, baby seat, safety belt, beverage, car interior, exterior, blanket, and seat. |
+| Canny | `canny/<sample>_canny.png` | Geometry-edge image produced by the Blender Freestyle pass and rotated 180 degrees during post-processing. |
+| Instance segmentation | `instance_seg/<sample>_instance_seg.png` | Pixel colors identify individual scene instances, including occupants, phones, belts, beverages, suitcase, baby seat, baby, seats, and car regions. |
 
-Example invocation executed by the wrappers (shell snippet):
+The channel color definitions are written to `seg_class_map.json` and `instance_seg_class_map.json`. `sample_manifest.json` records the relative path and scenario parameters for every successful sample, as well as failed samples when applicable.
+
+The `labels/` folder contains one ground-truth JSON annotation file per sample. Each label file records the scenario feature values used to generate the corresponding image and segmentation channels.
+
+## Getting started
+
+### 1. Install Python dependencies
+
+From the repository root, create and activate a virtual environment, then install the dependencies listed in [requirements.txt](requirements.txt):
 
 ```bash
-python $script \
-  --sut "$sut" \
-  --algorithm "$algorithm" \
-  --population_size 20 \
-  --n_generations 30 \
-  --max_time $budget \
-  --features_config "$config_file" \
-  --seed $seed
+python -m venv venv
+source venv/bin/activate
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
 ```
+
+On systems where PowerShell script execution is restricted, activate the environment from Command Prompt instead:
+
+```bat
+venv\Scripts\activate.bat
+```
+
+### 2. Configure the API for the tested SUT
+
+If the SUT being tested uses Azure OpenAI, create a `.env` file in the repository root with the endpoint and API key for that SUT:
+
+```dotenv
+AZURE_OPENAI_API_KEY=
+AZURE_OPENAI_ENDPOINT=
+```
+
+Fill in the values locally. Do not commit the API key or publish it in logs, screenshots, or documentation. The `.env` file is ignored by Git. If a key has been exposed, revoke it and create a replacement before using it again.
+
+### 3. Install Blender 5.1.2
+
+Download and install Blender 5.1.2 from the [official Blender downloads](https://www.blender.org/download/). The renderer is invoked in background mode using the Blender executable, so the installed version should match the version used for the scene and assets.
+
+### 4. Configure the Blender executable
+
+Set `BLENDER_APP_PATH` in [isu/config.py](isu/config.py) to the full path of the installed Blender executable. For example, on Windows:
+
+```python
+BLENDER_APP_PATH = r"C:\Program Files\Blender Foundation\Blender 5.1\blender.exe"
+```
+
+On macOS, use the executable inside the Blender application bundle:
+
+```python
+BLENDER_APP_PATH = "/Applications/Blender.app/Contents/MacOS/Blender"
+```
+
+The scene and driver paths are configured in the same file through `BLENDER_FILE_PATH` and `BLENDER_SCRIPT_PATH`.
+
+### 5. Add the Blender scene
+
+Obtain the `.blend` file representing the desired scene and copy it into [isu/blender/scenes](isu/blender/scenes). The default scene is `scene_v3.blend`. Pass another scene with the `--scene` flag when running the unified generator.
+
+### 6. Download the required SMPL-X data and assets
+
+SMPL-X data and assets are not redistributed with this repository. Download them from the official project pages and review their license terms before use:
+
+- **SMPL-X/AGORA NPZ data:** download the required `.npz` files from [AGORA](https://agora.is.tue.mpg.de/) and place them under `isu/blender/smpl/data/`.
+- **Other SMPL-X data:** download the required files from [SMPL-X](https://smpl-x.is.tue.mpg.de/), especially the data used by the assets under `isu/blender/assets/smplx_gt/`. The SMPL-X homepage contains the relevant license information.
+- **Additional SMPL resources:** the [SMPL Made Simple](https://smpl-made-simple.is.tue.mpg.de/) tutorial collection provides links to related sources and background material.
+
+For additional shapes or clothing textures, see the [SMPLitex texture collection](https://github.com/dancasas/dancasas.github.io/tree/master/projects/SMPLitex/SMPLitex-dataset/textures). Review the terms of each downloaded asset before including it in a dataset or redistribution.
+
+Create the human texture folders under [isu/blender/assets/human_texture](isu/blender/assets/human_texture) and add the required files:
+
+```text
+isu/blender/assets/human_texture/
+├── female/
+│   ├── 0white_female.png
+│   └── 1black_female.png
+└── male/
+  ├── 0white_male.png
+  └── 1black_male.png
+```
+
+The filenames must match the texture names expected by the Blender driver. The SMPL-X, AGORA, and third-party texture sources have separate licensing terms; see [License & Attributions](#license--attributions) before using them.
 
 ## Repository structure
 
-- [run_tests_isu.py](run_tests_isu.py): Core experiment runner used by shell wrappers.
-- [run_experiments_isu_*.sh](run_experiments_isu_gpt.sh): Shell wrappers to automate runs and logging.
+- [scripts/generate_isu_data.py](scripts/generate_isu_data.py): Unified random-sampling and genetic-search entry point.
 - [requirements.txt](requirements.txt): Python dependencies.
-- [configs/isu_features.json](configs/isu_features.json): Feature configuration used for experiments.
-- [get_analysis_isu.py](get_analysis_isu.py): Analysis entrypoint for experiment outputs.
+- [configs/isu_challenge_features.json](configs/isu_challenge_features.json): Default feature configuration used by the unified runner.
 
 Directories:
 
@@ -72,26 +141,51 @@ Directories:
 
 - `opensbt/` — core OpenSBT abstractions, algorithms, utilities and visualization code.
 
-- `run_experiments_isu_gpt.sh` (and siblings) — top-level experiment runners (described above).
+- `results/` — timestamped output folders created by the unified runner.
 
 ## Usage
 
-Edit the wrapper script variables at the top (for example `suts`, `algorithms`, `budget`, `script`, `config_file`, `repeat`) or run `run_tests_isu.py` directly. Example:
+Run the unified script from the repository root. It creates a timestamped folder below `--output-dir`, for example `results/scene_v3_ga/20260904_120000`.
 
 ```bash
-# from repo root
-./run_experiments_isu_gpt.sh
+# Genetic algorithm search (default)
+python scripts/generate_isu_data.py \
+  --algorithm nsga2 \
+  --population-size 20 \
+  --n-generations 30 \
+  --sut dummy \
+  --features-config configs/isu_challenge_features.json \
+  --scene isu/blender/scenes/scene_v3.blend \
+  --output-dir results/scene_v3_ga \
+  --seed 1 \
+  --no-wandb
 
-# or run a single experiment directly
-python run_tests_isu.py \
-  --sut "gpt5" \
-  --algorithm "nsga2" \
-  --population_size 20 \
-  --n_generations 30 \
-  --max_time "03:00:00" \
-  --features_config "configs/isu_features.json" \
-  --seed 1
+# Random sampling with the same output pipeline
+python scripts/generate_isu_data.py \
+  --algorithm rs \
+  --population-size 100 \
+  --sut dummy \
+  --output-dir results/scene_v3_rs \
+  --no-wandb
 ```
+
+### Available flags
+
+| Flag | Default | Description |
+| --- | --- | --- |
+| `--algorithm` | `nsga2` | Search mode: `nsga2` for genetic search or `rs` for random sampling. |
+| `--population-size` | `4` | Number of scenarios per population or random-sampling run. |
+| `--n-generations` | `2` | Number of genetic-search generations. It is retained in the output metadata for RS runs. |
+| `--seed` | `42` | Random seed. |
+| `--sut` | `dummy` | SUT adapter, for example `dummy`, `gpt5`, `gpt4o`, or a supported Gemini adapter. |
+| `--features-config` | `configs/isu_challenge_features.json` | Feature-space configuration JSON. |
+| `--scene` | `isu/blender/scenes/scene_v3.blend` | Blender scene path. |
+| `--output-dir` | `results/scene_v3_ga` | Parent output directory; a timestamped run directory is appended. |
+| `--timeout-sec` | `220` | Maximum time for an individual Blender render. |
+| `--max-time` | unset | Optional total search duration in `hh:mm:ss` format. |
+| `--no-wandb` | disabled | Disable Weights & Biases logging. Logging is enabled unless this flag is provided. |
+
+The generated result folder contains `json_inputs/`, `labels/`, `images/`, `depth/exr/`, `seg/`, `canny/`, `instance_seg/`, `critical_images/`, `sample_manifest.json`, `seg_class_map.json`, and `instance_seg_class_map.json`. Genetic-search result files and plots are written there as well.
 ## Replication
 
 A snapshot for the replication of the results in the paper is provided here: https://figshare.com/s/cb5b0eae0411e54b1bbd
@@ -100,9 +194,11 @@ A snapshot for the replication of the results in the paper is provided here: htt
 
 A generated dataset of interior scenes with ISU-Test will be provided soon.
 
-## License
+## License & Attributions
 
-See [LICENSE](LICENSE) for licensing information.
+ISU-Test is released under the [MIT License](LICENSE). Copyright is held by Lev Sorokin and Rifaath Ameen (BMW). Third-party assets and dependencies, including SMPL-X Body, remain subject to their respective licenses and terms.
+
+SMPL-X Body was used for character animation courtesy of the Max Planck Institute for Intelligent Systems. 
 
 ## Citation
 
@@ -110,7 +206,7 @@ If you use **ISU-Test** in your research, please cite the accompanying ASE 2026 
 
 ```bibtex
 @inproceedings{sorokin2026isutest,
-  author    = {Lev Sorokin and Chen Yang and Ken E. Friedl and Andrea Stocco},
+  author    = {Lev Sorokin and Rifaath Ameen and Chen Yang and Ken E. Friedl and Andrea Stocco},
   title     = {Search-based Testing of Vision Language Models for In-Car Scene Understanding},
   booktitle = {Proceedings of the 41st IEEE/ACM International Conference on Automated Software Engineering (ASE 2026), Industry Track},
   year      = {2026},
@@ -122,5 +218,6 @@ A preprint is available on arXiv: https://arxiv.org/abs/2607.02300
 
 ## Contact
 
-Lev Sorokin \
-lev.sorokin@bmw.de
+Lev Sorokin and Rifaath Ameen (BMW) \
+lev.sorokin@bmw.de  
+rifaath.ameen@bmw.de

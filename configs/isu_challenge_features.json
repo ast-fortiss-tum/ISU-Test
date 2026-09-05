@@ -1,0 +1,202 @@
+{
+  "categorical_features": [
+    {
+      "name": "env",
+      "values": ["URBAN", "HIGHWAY", "NATURE", "COUNTRYSIDE"],
+      "distribution": null
+    },
+    {
+      "name": "driver_gender",
+      "values": ["MALE", "FEMALE"],
+      "distribution": null
+    },
+    {
+      "name": "driver_tshirt_color",
+      "values": ["BLACK", "WHITE"],
+      "distribution": null
+    },
+    {
+      "name": "driver_emotion",
+      "values": ["HAPPY", "SERIOUS"],
+      "distribution": null
+    },
+    {
+      "name": "driver_phone",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "driver_safety_belt",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_codriver",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_codriver_tshirt_color",
+      "values": ["BLACK", "WHITE"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_codriver_emotion",
+      "values": ["HAPPY", "SERIOUS"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_codriver_head_angle",
+      "values": [-45, -30, -15, 0, 15, 30, 45],
+      "distribution": null
+    },
+    {
+      "name": "codriver_safety_belt",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_back_seat_left",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_left_tshirt_color",
+      "values": ["BLACK", "WHITE"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_left_emotion",
+      "values": ["HAPPY", "SERIOUS"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_left_head_angle",
+      "values": [-45, -30, -15, 0, 15, 30, 45],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_left_safety_belt",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_back_seat_right",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_right_tshirt_color",
+      "values": ["BLACK", "WHITE"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_right_emotion",
+      "values": ["HAPPY", "SERIOUS"],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_right_head_angle",
+      "values": [-45, -30, -15, 0, 15, 30, 45],
+      "distribution": null
+    },
+    {
+      "name": "passenger_rear_right_safety_belt",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "phone_codriver_seat",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "phone_codriver_seat_color",
+      "values": ["BLACK", "WHITE"],
+      "distribution": null
+    },
+    {
+      "name": "colabottle_codriver_seat",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "colacan_codriver_seat",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "suitcase",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "suitcase_color",
+      "values": ["ANTRACITE", "YELLOW"],
+      "distribution": null
+    },
+    {
+      "name": "suitcase_location",
+      "values": ["CO_DRIVER_SEAT", "REAR_SEAT"],
+      "distribution": null
+    },
+    {
+      "name": "suitcase_pose",
+      "values": ["UPWARDS", "FLAT"],
+      "distribution": null
+    },
+    {
+      "name": "baby_seat",
+      "values": ["NO", "YES"],
+      "distribution": null
+    },
+    {
+      "name": "baby_seat_orientation",
+      "values": ["FRONT_FACING", "REAR_FACING"],
+      "distribution": null
+    },
+    {
+      "name": "baby",
+      "values": ["NO", "YES"],
+      "distribution": null
+    }
+  ],
+  "ordinal_features": [],
+  "continuous_features": [
+    {
+      "name": "driver_height_m",
+      "lb": 1.6,
+      "ub": 2.0
+    },
+    {
+      "name": "driver_weight_kg",
+      "lb": 50,
+      "ub": 100
+    },
+    {
+      "name": "light_front",
+      "lb": 0.0,
+      "ub": 0.5
+    },
+    {
+      "name": "light_back_left",
+      "lb": 0.0,
+      "ub": 0.5
+    },
+    {
+      "name": "light_back_right",
+      "lb": 0.0,
+      "ub": 0.5
+    },
+    {
+      "name": "env_strength",
+      "lb": 0.5,
+      "ub": 1.0
+    },
+    {
+      "name": "exposure_compensation",
+      "lb": 0.0,
+      "ub": 2.0
+    }
+  ]
+}

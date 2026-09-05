@@ -94,7 +94,7 @@ def parse_args():
         help="Path to the file with feature config",
     )
     parser.add_argument(
-            "--no_wandb",
+            "--no-wandb",
             action="store_true",
             help="Turn off wanbd logging"
         )
